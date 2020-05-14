@@ -36,6 +36,7 @@ namespace Rhapsody {
 						logging.AddProvider(new LoggerProvider(options.LogLevel));
 					})
 				   .ConfigureServices((context, collection) => {
+						collection.AddConnections();
 						collection.AddControllers();
 						collection.AddHttpClient();
 						collection.AddMemoryCache(cacheOptions => {
