@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using Microsoft.Extensions.Logging;
 using Rhapsody.Entities;
 using Rhapsody.Extensions;
@@ -15,7 +16,16 @@ namespace Rhapsody.Factories {
 				Host = "127.0.0.1",
 				Port = 9000,
 				Authorization = nameof(Rhapsody),
-				LogLevel = LogLevel.Trace
+				LogLevel = LogLevel.Trace,
+				LogFilters = new Dictionary<string, LogLevel> {
+					{
+						"System.*", LogLevel.Trace
+					}
+				},
+				AuthEndpoints = new List<string>{
+					"/api/search",
+					"/ws"
+				}
 			};
 
 			var serialize = options.Serialize();
