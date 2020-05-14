@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Rhapsody.ConnectionHandlers;
 using Rhapsody.Middlewares;
 
 namespace Rhapsody {
@@ -8,29 +8,19 @@ namespace Rhapsody {
 		public void ConfigureServices(IServiceCollection services) {
 		}
 
-		public void Configure(IApplicationBuilder app, IHostApplicationLifetime hostApplicationLifetime) {
-			hostApplicationLifetime.ApplicationStarted.Register(OnStartup);
-			hostApplicationLifetime.ApplicationStopping.Register(OnStopping);
-			hostApplicationLifetime.ApplicationStopped.Register(OnStopped);
-
+		public void Configure(IApplicationBuilder app) {
 			app.UseRouting();
 			app.UseWebSockets();
+			app.UseFileServer();
 
 			app.UseMiddleware<ExceptionMiddleware>();
 			app.UseMiddleware<AuthenticationMiddleware>();
-			app.UseMiddleware<WebSocketMiddleware>();
+			//app.UseMiddleware<WebSocketMiddleware>();
 
-			app.UseEndpoints(endpoints => endpoints.MapControllers());
-		}
-
-
-		private void OnStartup() {
-		}
-
-		private void OnStopping() {
-		}
-
-		private void OnStopped() {
+			app.UseEndpoints(endpoints => {
+				endpoints.MapControllers();
+				endpoints.MapConnectionHandler<WebSocketHandler>("/ws");
+			});
 		}
 	}
 }
