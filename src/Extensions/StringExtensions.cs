@@ -10,13 +10,16 @@ namespace Rhapsody.Extensions {
 			}
 
 			var stringLength = splits.Sum(x => x.Length + indent) + splits.Length;
+			var range = Enumerable.Range(0, indent).ToArray();
+
 			return string.Create(stringLength, splits, (span, strings) => {
 				var position = 0;
 				for (var i = 0; i < strings.Length; i++) {
 					var trimmed = strings[i].Trim();
 					var tempChars = new char[trimmed.Length + indent + 1];
+
 					for (var s = 0; s < tempChars.Length; s++) {
-						if (Enumerable.Range(0, indent).Contains(s)) {
+						if (range.Contains(s)) {
 							tempChars[s] = ' ';
 						}
 						else {
@@ -26,7 +29,14 @@ namespace Rhapsody.Extensions {
 						}
 					}
 
-					var str = tempChars.AsSpan();
+					if (i == strings.Length - 1) {
+						tempChars.AsSpan().Slice(0, tempChars.Length - 1);
+					}
+
+					var charSpan = tempChars.AsSpan();
+					var str = i == strings.Length - 1
+						? charSpan.Slice(0, charSpan.Length - 1)
+						: charSpan;
 					str.CopyTo(i == 0
 						? span
 						: span.Slice(position));
