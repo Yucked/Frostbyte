@@ -18,7 +18,7 @@ namespace Rhapsody.Middlewares {
 		}
 
 		public async Task Invoke(HttpContext context) {
-			if (_applicationOptions.BlacklistedEndpoints.Contains(context.Request.Path)) {
+			if (!_applicationOptions.AuthEndpoints.Contains(context.Request.Path)) {
 				await _requestDelegate(context);
 				return;
 			}
