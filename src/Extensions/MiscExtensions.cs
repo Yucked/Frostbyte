@@ -1,8 +1,11 @@
-using System;
 using System.Drawing;
+using System.Net.WebSockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Colorful;
+using Microsoft.AspNetCore.Http;
 using Console = Colorful.Console;
 
 namespace Rhapsody.Extensions {
@@ -38,6 +41,25 @@ namespace Rhapsody.Extensions {
 
 			Console.WriteLineFormatted(LOG_MESSAGE, Color.White, formatters);
 			Console.WriteLine(new string('-', 100), Color.Gray);
+		}
+
+		public static Task SendAsync<T>(this WebSocket webSocket, T data) {
+			return webSocket.SendAsync(data.Serialize(), WebSocketMessageType.Binary, true, CancellationToken.None);
+		}
+
+		public static bool IsValidRequest(HttpContext context, out ulong userId) {
+			if (!context.Request.Headers.TryGetValue("User-Id", out var id)) {
+				context.Response.StatusCode = 403;
+				userId = default;
+				return false;
+			}
+
+			if (ulong.TryParse(id, out userId)) {
+				return true;
+			}
+
+			context.Response.StatusCode = 403;
+			return false;
 		}
 	}
 }
