@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap');
+
+html, body {
+    overflow: visible;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    
+    
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+
+    background-color: var(--color-initial);
+    color: var(--color-font);
+}
+
+.light {
+    --switch-icon: "🌚";
+    --color-initial: #fafbfc;
+    --color-font: #555;
+    --color-accent: #b5b5b5;
+}
+
+.dark {
+    --switch-icon: "🌝";
+    --color-initial: #121212;
+    --color-font: #b5b5b5;
+    --color-accent: #424242;
+}
