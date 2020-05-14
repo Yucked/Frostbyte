@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 
@@ -11,7 +10,8 @@ namespace Rhapsody.Entities {
 
 		[JsonConverter(typeof(JsonStringEnumConverter))]
 		public LogLevel LogLevel { get; set; }
-		public ConcurrentDictionary<string, LogLevel> LogFilters { get; set; }
-		public List<string> BlacklistedEndpoints { get; set; }
+
+		public IDictionary<string, LogLevel> LogFilters { get; set; }
+		public List<string> AuthEndpoints { get; set; }
 	}
 }
