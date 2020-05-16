@@ -47,7 +47,7 @@ namespace Rhapsody.Extensions {
 			return webSocket.SendAsync(data.Serialize(), WebSocketMessageType.Binary, true, CancellationToken.None);
 		}
 
-		public static bool IsValidRequest(HttpContext context, out ulong userId) {
+		public static bool IsValidRequest(this HttpContext context, out ulong userId) {
 			if (!context.Request.Headers.TryGetValue("User-Id", out var id)) {
 				context.Response.StatusCode = 403;
 				userId = default;

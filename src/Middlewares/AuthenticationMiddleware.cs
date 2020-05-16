@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Rhapsody.Entities;
 
 namespace Rhapsody.Middlewares {
 	public readonly struct AuthenticationMiddleware {
