@@ -1,13 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
-using Rhapsody.Entities;
 using Rhapsody.Extensions;
 
-namespace Rhapsody.Factories {
-	public sealed class OptionsFactory {
+namespace Rhapsody {
+	public sealed class ApplicationOptions {
+		public string Host { get; set; }
+		public ushort Port { get; set; }
+		public string Authorization { get; set; }
+
+		[JsonConverter(typeof(JsonStringEnumConverter))]
+		public LogLevel LogLevel { get; set; }
+
+		public IDictionary<string, LogLevel> LogFilters { get; set; }
+		public List<string> AuthEndpoints { get; set; }
+
+
 		public const string FILE_NAME = "options.json";
 
+		[JsonIgnore]
 		public static bool IsCreated
 			=> File.Exists(FILE_NAME);
 
@@ -22,7 +34,7 @@ namespace Rhapsody.Factories {
 						"System.*", LogLevel.Trace
 					}
 				},
-				AuthEndpoints = new List<string>{
+				AuthEndpoints = new List<string> {
 					"/api/search",
 					"/ws"
 				}

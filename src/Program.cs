@@ -6,9 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Rhapsody.Entities;
 using Rhapsody.Extensions;
-using Rhapsody.Factories;
 using Rhapsody.Logging;
 
 namespace Rhapsody {
@@ -17,14 +15,14 @@ namespace Rhapsody {
 			try {
 				MiscExtensions.SetupApplicationInformation();
 
-				var options = OptionsFactory.IsCreated
-					? OptionsFactory.Load()
-					: OptionsFactory.Create();
+				var options = ApplicationOptions.IsCreated
+					? ApplicationOptions.Load()
+					: ApplicationOptions.Create();
 
 				await Host.CreateDefaultBuilder()
 				   .ConfigureAppConfiguration(x => {
 						x.SetBasePath(Directory.GetCurrentDirectory());
-						x.AddJsonFile(OptionsFactory.FILE_NAME, false, true);
+						x.AddJsonFile(ApplicationOptions.FILE_NAME, false, true);
 					})
 				   .ConfigureWebHostDefaults(webBuilder => {
 						webBuilder.UseStartup<Startup>();
