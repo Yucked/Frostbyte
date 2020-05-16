@@ -4,27 +4,90 @@ html, body {
     overflow: visible;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    
-    
+
+    font-family: 'Nanum Pen Script', cursive !important;
+    background: #F0F0F0;
+    padding: 12px;
+}
+
+*, ::after, ::before {
+    box-sizing: unset !important;
+}
+
+.menu {
+    background: #fff;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.menu .bar {
+    width: 30px;
+    height: 4px;
+    margin: 0 auto;
+    background: #2e2e2e;
+    position: relative;
+    transition: all 0.5s ease;
+}
+
+.menu .bar ul {
+    list-style-type: none;
+    position: relative;
     margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-
-    background-color: var(--color-initial);
-    color: var(--color-font);
+    top: -200px;
+    transform: rotate(-90deg);
 }
 
-.light {
-    --switch-icon: "🌚";
-    --color-initial: #fafbfc;
-    --color-font: #555;
-    --color-accent: #b5b5b5;
+.menu .bar ul li {
+    line-height: 2.1;
+    margin: 0;
+    height: 30px;
+    padding: 15px;
+    text-align: left;
+    color: #2e2e2e;
+    opacity: 0;
+    font-size: 20px;
+    transition: opacity 0.5s ease;
 }
 
-.dark {
-    --switch-icon: "🌝";
-    --color-initial: #121212;
-    --color-font: #b5b5b5;
-    --color-accent: #424242;
+.menu .bar ul li a:hover {
+    text-decoration: none;
+    color: #303F9F;
+}
+
+.menu .bar:nth-child(1) {
+    top: 15px;
+}
+
+.menu .bar:nth-child(2) {
+    top: 24px;
+}
+
+.menu .bar:nth-child(3) {
+    top: 33px;
+}
+
+.menu:hover {
+    cursor: pointer;
+}
+
+.menu.active .bar:nth-child(1) {
+    transform: rotate(45deg) translateX(6px) translateY(-2px);
+    transform-origin: 0 0;
+}
+
+.menu.active .bar:nth-child(2) {
+    transform: rotate(135deg);
+}
+
+.menu.active .bar:nth-child(3) {
+    top: 100px;
+    transform: rotate(90deg);
+    transform-origin: 15px 0;
+    width: 240px;
+}
+
+.menu.active .bar:nth-child(3) ul li {
+    opacity: 1;
 }
