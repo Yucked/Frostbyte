@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using Rhapsody.Controllers.Entities;
+using Rhapsody.Controllers.Payloads;
 
 namespace Rhapsody.Controllers {
 	[Route("api/[controller]"), ApiController]
@@ -13,7 +13,7 @@ namespace Rhapsody.Controllers {
 
 		[HttpGet("{guildId}")]
 		public IActionResult Get(ulong guildId) {
-			if (!_memoryCache.TryGetValue(guildId, out PlayerEntity player)) {
+			if (!_memoryCache.TryGetValue(guildId, out GuildPlayer player)) {
 				return NotFound();
 			}
 
@@ -21,7 +21,7 @@ namespace Rhapsody.Controllers {
 		}
 
 		[HttpPost("{guildId}")]
-		public IActionResult Create(ulong guildId, PlayerEntity player) {
+		public IActionResult Create(ulong guildId, GuildPlayer player) {
 			if (_memoryCache.TryGetValue(guildId, out _)) {
 				return Conflict();
 			}
@@ -41,7 +41,7 @@ namespace Rhapsody.Controllers {
 		}
 
 		[HttpPost("{guildId}")]
-		public IActionResult HandlePayload(ulong guildId, PayloadEntity payload) {
+		public IActionResult HandlePayload(ulong guildId, BasePayload payload) {
 			if (!_memoryCache.TryGetValue(guildId, out _)) {
 				return NotFound();
 			}
