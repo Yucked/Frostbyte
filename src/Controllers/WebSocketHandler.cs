@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Threading;
@@ -12,29 +11,22 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Rhapsody.Extensions;
 
-namespace Rhapsody.WS {
+namespace Rhapsody.Controllers {
 	[Route("/ws/{guildId}")]
 	public sealed class WebSocketHandler : ConnectionHandler {
 		private readonly ILogger _logger;
-		private readonly ILoggerFactory _loggerFactory;
 		private readonly IMemoryCache _memoryCache;
 		private readonly Pipe _pipe;
 		private const int BUFFER_SIZE = 256;
 
-		private readonly ConcurrentDictionary<string, WebSocketConnection> _connections;
-
-		public WebSocketHandler(ILogger<WebSocketHandler> logger, ILoggerFactory loggerFactory, IMemoryCache memoryCache) {
+		public WebSocketHandler(ILogger<WebSocketHandler> logger, IMemoryCache memoryCache) {
 			_logger = logger;
-			_loggerFactory = loggerFactory;
 			_memoryCache = memoryCache;
-			_connections = new ConcurrentDictionary<string, WebSocketConnection>();
-
 			_pipe = new Pipe();
 		}
 
 		public override async Task OnConnectedAsync(ConnectionContext connection) {
 			var httpContext = connection.GetHttpContext();
-			var endpoint = $"{connection.RemoteEndPoint}";
 
 			if (!httpContext.WebSockets.IsWebSocketRequest) {
 				await httpContext.Response.WriteAsync("Only WebSocket requests are allowed at this endpoint.");
@@ -42,7 +34,13 @@ namespace Rhapsody.WS {
 				return;
 			}
 
-			if (!httpContext.IsValidRequest(out var userId)) {
+			if (!httpContext.IsValidRoute(out var guildId)) {
+				await httpContext.Response.CompleteAsync();
+				return;
+			}
+
+			if (!_memoryCache.TryGetValue(guildId, out GuildPlayer guildPlayer)) {
+				await httpContext.Response.WriteAsync($"You must send a ConnectPayload to /api/player/{guildId}.");
 				await httpContext.Response.CompleteAsync();
 				return;
 			}
@@ -51,18 +49,14 @@ namespace Rhapsody.WS {
 			await httpContext.WebSockets.AcceptWebSocketAsync()
 			   .ContinueWith(async task => {
 					var webSocket = await task;
-					var socketConnection =
-						new WebSocketConnection(webSocket, endpoint, userId, _loggerFactory.CreateLogger<WebSocketConnection>());
-
-					_connections.TryAdd(endpoint, socketConnection);
-					await socketConnection.OnConnectedAsync();
-					await HandleConnectionAsync(socketConnection);
+					await guildPlayer.OnConnectedAsync();
+					await HandleConnectionAsync(guildPlayer);
 				});
 		}
 
-		private async Task HandleConnectionAsync(WebSocketConnection webSocketConnection) {
+		private async Task HandleConnectionAsync(GuildPlayer guildPlayer) {
 			var writer = _pipe.Writer;
-			var webSocket = webSocketConnection.WebSocket;
+			var webSocket = guildPlayer.Socket;
 
 			try {
 				do {
@@ -74,16 +68,14 @@ namespace Rhapsody.WS {
 					}
 
 					await writer.FlushAsync();
-					await webSocketConnection.OnMessageAsync(_pipe.Reader);
+					// await webSocketConnection.OnMessageAsync(_pipe.Reader);
 				} while (webSocket.State == WebSocketState.Open);
 			}
 			catch (Exception exception) {
 				_logger.LogCritical(exception, exception.StackTrace);
 
 				await writer.CompleteAsync(exception);
-				await webSocketConnection.OnDisconnectedAsync();
-
-				_connections.TryRemove(webSocketConnection.Endpoint, out _);
+				// await webSocketConnection.OnDisconnectedAsync();
 			}
 		}
 	}
