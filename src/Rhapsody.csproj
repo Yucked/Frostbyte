@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Colorful.Console" Version="1.2.10"/>
+        <PackageReference Include="Colorful.Console" Version="1.2.10" />
     </ItemGroup>
     
 </Project>
