@@ -1,36 +1,41 @@
-using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Rhapsody.Payloads.Inbound;
 
 namespace Rhapsody {
 	public struct GuildPlayer {
-		[Required, MaxLength(19)]
 		[JsonPropertyName("user_id")]
-		public ulong UserId { get; private set; }
+		public ulong UserId { get; }
 
-		[Required]
 		[JsonPropertyName("session_id")]
-		public string SessionId { get; private set; }
+		public string SessionId { get; }
 
-		[Required]
 		[JsonPropertyName("token")]
-		public string Token { get; private set; }
+		public string Token { get; }
 
-		[Required]
 		[JsonPropertyName("endpoint")]
-		public string Endpoint { get; private set; }
+		public string Endpoint { get; }
 
-		[Required]
 		[JsonPropertyName("client_endpoint")]
-		public string ClientEndpoint { get; private set; }
+		public string Client { get; }
 
 		[JsonIgnore]
 		public WebSocket Socket { get; private set; }
 
 		private readonly ILogger _logger;
+
+		public GuildPlayer(ConnectPayload connectPayload, string clientEndpoint, ILogger logger) {
+			UserId = connectPayload.UserId;
+			SessionId = connectPayload.SessionId;
+			Token = connectPayload.Token;
+			Endpoint = connectPayload.Endpoint;
+			Client = clientEndpoint;
+			_logger = logger;
+			Socket = default;
+		}
 
 		public async ValueTask OnConnectedAsync() {
 			_logger.LogInformation($"WebSocket connection opened from {Endpoint}.");

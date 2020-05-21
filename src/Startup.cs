@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Rhapsody.Controllers;
 using Rhapsody.Middlewares;
-using Rhapsody.WS;
 
 namespace Rhapsody {
 	public sealed class Startup {
