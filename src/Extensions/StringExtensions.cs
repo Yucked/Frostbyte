@@ -37,12 +37,34 @@ namespace Rhapsody.Extensions {
 					var str = i == strings.Length - 1
 						? charSpan.Slice(0, charSpan.Length - 1)
 						: charSpan;
-					str.CopyTo(i == 0
-						? span
-						: span.Slice(position));
+					str.CopyTo(i == 0 ? span : span.Slice(position));
 					position += str.Length;
 				}
 			});
+		}
+
+		public static string Wrap(this string str, int wrapAfter = 50) {
+			var words = str.Split(' ');
+			if (words.Length <= 50) {
+				return str;
+			}
+
+			var wrappedAt = 0;
+			var result = new string[words.Length + words.Length - 1];
+			for (var i = 0; i < words.Length; i++) {
+				var s = i++;
+				result[i] = words[i];
+				if (wrappedAt == wrapAfter) {
+					wrappedAt = 0;
+					result[s] = "\n";
+				}
+				else {
+					result[s] = " ";
+					wrappedAt++;
+				}
+			}
+
+			return string.Join("", result);
 		}
 	}
 }
