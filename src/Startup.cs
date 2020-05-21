@@ -15,11 +15,10 @@ namespace Rhapsody {
 
 			app.UseMiddleware<ExceptionMiddleware>();
 			app.UseMiddleware<AuthenticationMiddleware>();
-			//app.UseMiddleware<WebSocketMiddleware>();
 
 			app.UseEndpoints(endpoints => {
 				endpoints.MapControllers();
-				endpoints.MapConnectionHandler<WebSocketHandler>("/ws");
+				endpoints.MapConnectionHandler<WebSocketHandler>("/ws/{guildId}");
 			});
 		}
 	}
