@@ -4,30 +4,32 @@ using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Rhapsody.Extensions;
 
 namespace Rhapsody.WS {
+	[Route("/ws/{guildId}")]
 	public sealed class WebSocketHandler : ConnectionHandler {
 		private readonly ILogger _logger;
 		private readonly ILoggerFactory _loggerFactory;
-		private readonly PipeWriter _pipeWriter;
-		private readonly PipeReader _pipeReader;
+		private readonly IMemoryCache _memoryCache;
+		private readonly Pipe _pipe;
 		private const int BUFFER_SIZE = 256;
 
 		private readonly ConcurrentDictionary<string, WebSocketConnection> _connections;
 
-		public WebSocketHandler(ILogger<WebSocketHandler> logger, ILoggerFactory loggerFactory) {
+		public WebSocketHandler(ILogger<WebSocketHandler> logger, ILoggerFactory loggerFactory, IMemoryCache memoryCache) {
 			_logger = logger;
 			_loggerFactory = loggerFactory;
+			_memoryCache = memoryCache;
 			_connections = new ConcurrentDictionary<string, WebSocketConnection>();
-			
-			var pipe = new Pipe();
-			_pipeWriter = pipe.Writer;
-			_pipeReader = pipe.Reader;
+
+			_pipe = new Pipe();
 		}
 
 		public override async Task OnConnectedAsync(ConnectionContext connection) {
@@ -45,6 +47,7 @@ namespace Rhapsody.WS {
 				return;
 			}
 
+
 			await httpContext.WebSockets.AcceptWebSocketAsync()
 			   .ContinueWith(async task => {
 					var webSocket = await task;
@@ -58,25 +61,26 @@ namespace Rhapsody.WS {
 		}
 
 		private async Task HandleConnectionAsync(WebSocketConnection webSocketConnection) {
+			var writer = _pipe.Writer;
+			var webSocket = webSocketConnection.WebSocket;
+
 			try {
-				var webSocket = webSocketConnection.WebSocket;
 				do {
-					var memory = _pipeWriter.GetMemory(BUFFER_SIZE);
+					var memory = writer.GetMemory(BUFFER_SIZE);
 					var receiveResult = await webSocket.ReceiveAsync(memory, CancellationToken.None);
 					if (!receiveResult.EndOfMessage) {
-						_pipeWriter.Advance(receiveResult.Count);
+						writer.Advance(receiveResult.Count);
 						continue;
 					}
 
-					await _pipeWriter.FlushAsync();
-					var readResult = await _pipeReader.ReadAsync();
-					await webSocketConnection.OnMessageAsync();
+					await writer.FlushAsync();
+					await webSocketConnection.OnMessageAsync(_pipe.Reader);
 				} while (webSocket.State == WebSocketState.Open);
 			}
 			catch (Exception exception) {
 				_logger.LogCritical(exception, exception.StackTrace);
-				
-				await _pipeWriter.CompleteAsync(exception);
+
+				await writer.CompleteAsync(exception);
 				await webSocketConnection.OnDisconnectedAsync();
 
 				_connections.TryRemove(webSocketConnection.Endpoint, out _);

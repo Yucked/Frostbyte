@@ -1,3 +1,4 @@
+using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -17,15 +18,16 @@ namespace Rhapsody.WS {
 			_logger = logger;
 		}
 
-		public async Task OnConnectedAsync() {
-			_logger.LogInformation("");
+		public async ValueTask OnConnectedAsync() {
+			_logger.LogInformation($"WebSocket connection opened from {Endpoint}.");
 		}
 
-		public async Task OnDisconnectedAsync() {
-			_logger.LogError("");
+		public async ValueTask OnDisconnectedAsync() {
+			_logger.LogError($"WebSocket connection dropped by {Endpoint}.");
 		}
 
-		public async Task OnMessageAsync() {
+		public async ValueTask OnMessageAsync(PipeReader pipeReader) {
+			
 		}
 	}
 }
