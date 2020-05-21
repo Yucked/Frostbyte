@@ -47,18 +47,18 @@ namespace Rhapsody.Extensions {
 			return webSocket.SendAsync(data.Serialize(), WebSocketMessageType.Binary, true, CancellationToken.None);
 		}
 
-		public static bool IsValidRequest(this HttpContext context, out ulong userId) {
-			if (!context.Request.Headers.TryGetValue("User-Id", out var id)) {
-				context.Response.StatusCode = 403;
-				userId = default;
+		public static bool IsValidRoute(this HttpContext httpContext, out ulong guildId) {
+			if (!httpContext.Request.RouteValues.TryGetValue("guildId", out var obj)) {
+				httpContext.Response.StatusCode = 403;
+				guildId = default;
 				return false;
 			}
 
-			if (ulong.TryParse(id, out userId)) {
+			if (ulong.TryParse($"{obj}", out guildId)) {
 				return true;
 			}
 
-			context.Response.StatusCode = 403;
+			httpContext.Response.StatusCode = 403;
 			return false;
 		}
 	}
