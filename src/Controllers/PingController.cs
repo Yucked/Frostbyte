@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Rhapsody.Controllers {
-	[Route("api/[controller]"), ApiController]
+	[Route("api/[controller]"), ApiController, Produces("application/json")]
 	public sealed class PingController : ControllerBase {
 		private readonly IMemoryCache _memoryCache;
 		private const string CACHE_KEY = "_Time";
