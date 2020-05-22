@@ -6,14 +6,11 @@
         <ApplicationIcon>Icon.ico</ApplicationIcon>
         <PublishTrimmed>true</PublishTrimmed>
         <PublishReadyToRun>true</PublishReadyToRun>
+        <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Colorful.Console" Version="1.2.10" />
+        <PackageReference Include="Colorful.Console" Version="1.2.10"/>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Payloads\Outbound" />
-    </ItemGroup>
-    
 </Project>
