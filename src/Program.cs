@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Rhapsody.Entities;
 using Rhapsody.Extensions;
 using Rhapsody.Logging;
 
@@ -15,18 +16,19 @@ namespace Rhapsody {
 			try {
 				MiscExtensions.SetupApplicationInformation();
 
-				var options = ApplicationOptions.IsCreated
-					? ApplicationOptions.Load()
-					: ApplicationOptions.Create();
+				var options = Configuration.IsCreated
+					? Configuration.Load()
+					: Configuration.Create();
 
 				await Host.CreateDefaultBuilder()
 				   .ConfigureAppConfiguration(x => {
 						x.SetBasePath(Directory.GetCurrentDirectory());
-						x.AddJsonFile(ApplicationOptions.FILE_NAME, false, true);
+						x.AddJsonFile(Configuration.FILE_NAME, false, true);
 					})
 				   .ConfigureWebHostDefaults(webBuilder => {
-						webBuilder.UseStartup<Startup>();
 						webBuilder.UseUrls($"http://{options.Host}:{options.Port}");
+						webBuilder.UseKestrel();
+						webBuilder.UseStartup<Startup>();
 					})
 				   .ConfigureLogging(logging => {
 						logging.SetMinimumLevel(options.LogLevel);
@@ -41,7 +43,7 @@ namespace Rhapsody {
 							cacheOptions.ExpirationScanFrequency = TimeSpan.FromSeconds(30);
 							cacheOptions.CompactionPercentage = 0.5;
 						});
-						collection.Configure<ApplicationOptions>(context.Configuration);
+						collection.Configure<Configuration>(context.Configuration);
 					})
 				   .RunConsoleAsync();
 			}
