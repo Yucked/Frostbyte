@@ -4,8 +4,8 @@ using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Rhapsody.Extensions;
 
-namespace Rhapsody {
-	public sealed class ApplicationOptions {
+namespace Rhapsody.Entities {
+	public sealed class Configuration {
 		public string Host { get; set; }
 		public ushort Port { get; set; }
 		public string Authorization { get; set; }
@@ -23,8 +23,8 @@ namespace Rhapsody {
 		public static bool IsCreated
 			=> File.Exists(FILE_NAME);
 
-		public static ApplicationOptions Create() {
-			var options = new ApplicationOptions {
+		public static Configuration Create() {
+			var options = new Configuration {
 				Host = "127.0.0.1",
 				Port = 9000,
 				Authorization = nameof(Rhapsody),
@@ -46,9 +46,9 @@ namespace Rhapsody {
 			return options;
 		}
 
-		public static ApplicationOptions Load() {
+		public static Configuration Load() {
 			var bytes = File.ReadAllBytes(FILE_NAME);
-			return bytes.Deserialize<ApplicationOptions>();
+			return bytes.Deserialize<Configuration>();
 		}
 	}
 }
