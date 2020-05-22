@@ -3,16 +3,15 @@ using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Rhapsody.Entities;
 using Rhapsody.Extensions;
 
 namespace Rhapsody.Controllers {
-	[Route("/ws/{guildId}")]
 	public sealed class WebSocketHandler : ConnectionHandler {
 		private readonly ILogger _logger;
 		private readonly IMemoryCache _memoryCache;
@@ -45,11 +44,10 @@ namespace Rhapsody.Controllers {
 				return;
 			}
 
-
 			await httpContext.WebSockets.AcceptWebSocketAsync()
 			   .ContinueWith(async task => {
 					var webSocket = await task;
-					await guildPlayer.OnConnectedAsync();
+					await guildPlayer.OnConnectedAsync(webSocket);
 					await HandleConnectionAsync(guildPlayer);
 				});
 		}
@@ -68,14 +66,14 @@ namespace Rhapsody.Controllers {
 					}
 
 					await writer.FlushAsync();
-					// await webSocketConnection.OnMessageAsync(_pipe.Reader);
+					await guildPlayer.OnMessageAsync(_pipe.Reader);
 				} while (webSocket.State == WebSocketState.Open);
 			}
 			catch (Exception exception) {
 				_logger.LogCritical(exception, exception.StackTrace);
 
 				await writer.CompleteAsync(exception);
-				// await webSocketConnection.OnDisconnectedAsync();
+				await guildPlayer.OnDisconnectedAsync(exception);
 			}
 		}
 	}
