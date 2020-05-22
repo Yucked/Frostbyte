@@ -9,16 +9,16 @@ namespace Rhapsody {
 		}
 
 		public void Configure(IApplicationBuilder app) {
-			app.UseRouting();
 			app.UseWebSockets();
-			app.UseFileServer();
+			app.UseStaticFiles();
+			app.UseRouting();
 
 			app.UseMiddleware<ExceptionMiddleware>();
 			app.UseMiddleware<AuthenticationMiddleware>();
 
 			app.UseEndpoints(endpoints => {
 				endpoints.MapControllers();
-				endpoints.MapConnectionHandler<WebSocketHandler>("/ws/{guildId}");
+				endpoints.MapConnectionHandler<WebSocketHandler>("/player/{guildId}");
 			});
 		}
 	}
