@@ -66,5 +66,26 @@ namespace Rhapsody.Extensions {
 
 			return string.Join("", result);
 		}
+
+		public static bool IsMatchFilter(this string categoryFilter, ref string category) {
+			if (categoryFilter.Contains("*")) {
+				categoryFilter = categoryFilter[..^2];
+			}
+
+			var splits = category.Split('.');
+			var tempCategory = string.Empty;
+
+			foreach (var split in splits) {
+				tempCategory += split;
+				if (categoryFilter == tempCategory) {
+					break;
+				}
+
+				tempCategory += ".";
+			}
+
+			category = tempCategory;
+			return true;
+		}
 	}
 }
