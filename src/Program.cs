@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Dysc;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +18,7 @@ namespace Rhapsody {
 			try {
 				MiscExtensions.SetupApplicationInformation();
 
-				var options = Configuration.IsCreated
+				var configuration = Configuration.IsCreated
 					? Configuration.Load()
 					: Configuration.Create();
 
@@ -26,14 +28,13 @@ namespace Rhapsody {
 						x.AddJsonFile(Configuration.FILE_NAME, false, true);
 					})
 				   .ConfigureWebHostDefaults(webBuilder => {
-						webBuilder.UseUrls($"http://{options.Host}:{options.Port}");
-						webBuilder.UseKestrel();
+						webBuilder.UseUrls($"http://{configuration.Host}:{configuration.Port}");
 						webBuilder.UseStartup<Startup>();
 					})
 				   .ConfigureLogging(logging => {
-						logging.SetMinimumLevel(options.LogLevel);
+						logging.SetMinimumLevel(configuration.LogLevel);
 						logging.ClearProviders();
-						logging.AddProvider(new LoggerProvider(options.LogLevel));
+						logging.AddProvider(new LoggerProvider(configuration));
 					})
 				   .ConfigureServices((context, collection) => {
 						collection.AddConnections();
@@ -43,7 +44,10 @@ namespace Rhapsody {
 							cacheOptions.ExpirationScanFrequency = TimeSpan.FromSeconds(30);
 							cacheOptions.CompactionPercentage = 0.5;
 						});
+						collection.AddResponseCaching(cachingOptions => { cachingOptions.SizeLimit = 5; });
+						collection.AddResponseCompression();
 						collection.Configure<Configuration>(context.Configuration);
+						collection.AddSingleton<DyscClient>();
 					})
 				   .RunConsoleAsync();
 			}
