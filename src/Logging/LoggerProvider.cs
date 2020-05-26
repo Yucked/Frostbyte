@@ -1,19 +1,24 @@
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using Colorful;
 using Microsoft.Extensions.Logging;
+using Rhapsody.Entities;
+using Rhapsody.Extensions;
 
 namespace Rhapsody.Logging {
 	public struct LoggerProvider : ILoggerProvider {
 		private const string MESSAGE_FORMAT = "[{0}] [{1}] [{2}]\n{3}";
-		private readonly LogLevel _logLevel;
+		private readonly LogLevel _defaultLevel;
+		private readonly IDictionary<string, LogLevel> _filters;
 		private readonly ConcurrentQueue<Formatter[]> _queue;
 		private readonly ConcurrentDictionary<string, ILogger> _loggers;
 		private bool _isDisposed;
 
-		public LoggerProvider(LogLevel logLevel) {
-			_logLevel = logLevel;
+		public LoggerProvider(Configuration configuration) {
+			_defaultLevel = configuration.LogLevel;
+			_filters = configuration.LogFilters;
 			_loggers = new ConcurrentDictionary<string, ILogger>();
 			_queue = new ConcurrentQueue<Formatter[]>();
 			_isDisposed = false;
@@ -22,10 +27,15 @@ namespace Rhapsody.Logging {
 		}
 
 		public readonly ILogger CreateLogger(string categoryName) {
-			if (_loggers.TryGetValue(categoryName, out var logger))
-				return logger;
+			if (_filters.TryGetFilter(ref categoryName, out var logLevel)) {
+			}
 
-			logger = new ColorfulLogger(categoryName, _logLevel, this);
+			if (_loggers.TryGetValue(categoryName, out var logger)) {
+				return logger;
+			}
+
+
+			logger = new ColorfulLogger(categoryName, _defaultLevel, this);
 			_loggers.TryAdd(categoryName, logger);
 			return logger;
 		}
