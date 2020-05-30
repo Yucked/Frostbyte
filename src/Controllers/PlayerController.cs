@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Rhapsody.Entities;
 using Rhapsody.Payloads.Inbound;
 using Rhapsody.Payloads.Outbound;
 
@@ -20,7 +19,7 @@ namespace Rhapsody.Controllers {
 		[HttpGet("{guildId}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public ActionResult<RestResponse> Get(ulong guildId) {
+		public IActionResult Get(ulong guildId) {
 			return !_memoryCache.TryGetValue(guildId, out GuildPlayer player)
 				? RestResponse.Error($"Couldn't find player with {guildId} id.")
 				: RestResponse.Ok(player);
@@ -29,7 +28,7 @@ namespace Rhapsody.Controllers {
 		[HttpDelete("{guildId}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public ActionResult<RestResponse> Delete(ulong guildId) {
+		public IActionResult Delete(ulong guildId) {
 			if (!_memoryCache.TryGetValue(guildId, out _)) {
 				return RestResponse.Error($"Couldn't find player with {guildId} id.");
 			}

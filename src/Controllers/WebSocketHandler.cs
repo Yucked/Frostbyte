@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Rhapsody.Entities;
 using Rhapsody.Extensions;
 
 namespace Rhapsody.Controllers {
