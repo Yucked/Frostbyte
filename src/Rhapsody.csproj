@@ -11,12 +11,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Colorful.Console" Version="1.2.10"/>
+        <PackageReference Include="Colorful.Console" Version="1.2.10" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Condition="'$(Configuration)'=='Debug'" Include="..\..\Dysc\src\Dysc.csproj"/>
-        <PackageReference Condition="'$(Configuration)'=='Release'" Include="Dysc" Version="0.0.*"/>
+        <ProjectReference Condition="'$(Configuration)'=='Debug'" Include="..\..\Dysc\src\Dysc.csproj" />
+        <PackageReference Condition="'$(Configuration)'=='Release'" Include="Dysc" Version="0.0.*" />
     </ItemGroup>
 
 </Project>

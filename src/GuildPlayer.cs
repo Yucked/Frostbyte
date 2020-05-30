@@ -5,9 +5,10 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Rhapsody.Extensions;
 using Rhapsody.Payloads.Inbound;
 
-namespace Rhapsody.Entities {
+namespace Rhapsody {
 	public struct GuildPlayer {
 		[JsonPropertyName("user_id")]
 		public ulong UserId { get; }
@@ -46,7 +47,7 @@ namespace Rhapsody.Entities {
 
 		public async ValueTask OnDisconnectedAsync(Exception exception = default) {
 			_logger.LogError($"WebSocket connection dropped by {RemoteEndpoint}.");
-			if (Guard.IsSafeMatch(Socket.State, WebSocketState.Connecting, WebSocketState.Open)) {
+			if (Socket.State.TryMatchAny(WebSocketState.Connecting, WebSocketState.Open)) {
 				await Socket.CloseAsync(WebSocketCloseStatus.InternalServerError, exception?.Message, CancellationToken.None);
 			}
 

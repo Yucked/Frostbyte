@@ -8,9 +8,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Rhapsody.Entities;
 using Rhapsody.Extensions;
-using Rhapsody.Logging;
+using Rhapsody.Internals.Attributes;
+using Rhapsody.Internals.Logging;
+using Rhapsody.Options;
 
 namespace Rhapsody {
 	public readonly struct Program {
@@ -18,23 +19,25 @@ namespace Rhapsody {
 			try {
 				MiscExtensions.SetupApplicationInformation();
 
-				var configuration = Configuration.IsCreated
-					? Configuration.Load()
-					: Configuration.Create();
+				var configuration = OptionsManager.IsCreated
+					? OptionsManager.Load()
+					: OptionsManager.Create();
 
 				await Host.CreateDefaultBuilder()
 				   .ConfigureAppConfiguration(x => {
 						x.SetBasePath(Directory.GetCurrentDirectory());
-						x.AddJsonFile(Configuration.FILE_NAME, false, true);
+						x.AddJsonFile(OptionsManager.FILE_NAME, false, true);
 					})
 				   .ConfigureWebHostDefaults(webBuilder => {
-						webBuilder.UseUrls($"http://{configuration.Host}:{configuration.Port}");
+						var endpoint = configuration.Endpoint;
+						webBuilder.UseUrls($"http://{endpoint.Host}:{endpoint.Port}");
 						webBuilder.UseStartup<Startup>();
 					})
 				   .ConfigureLogging(logging => {
-						logging.SetMinimumLevel(configuration.LogLevel);
+						var loggingOptions = configuration.Logging;
+						logging.SetMinimumLevel(loggingOptions.DefaultLevel);
 						logging.ClearProviders();
-						logging.AddProvider(new LoggerProvider(configuration));
+						logging.AddProvider(new LoggerProvider(loggingOptions));
 					})
 				   .ConfigureServices((context, collection) => {
 						collection.AddConnections();
@@ -46,7 +49,9 @@ namespace Rhapsody {
 						});
 						collection.AddResponseCaching(cachingOptions => { cachingOptions.SizeLimit = 5; });
 						collection.AddResponseCompression();
-						collection.Configure<Configuration>(context.Configuration);
+						collection.Configure<OptionsManager>(context.Configuration);
+						
+						collection.AddScoped<ProviderFilterAttribute>();
 						collection.AddSingleton<DyscClient>();
 					})
 				   .RunConsoleAsync();
