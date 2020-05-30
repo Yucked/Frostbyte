@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Rhapsody.Middlewares {
+namespace Rhapsody.Internals.Middlewares {
     public readonly struct ExceptionMiddleware {
         private readonly RequestDelegate _requestDelegate;
         private readonly ILogger _logger;

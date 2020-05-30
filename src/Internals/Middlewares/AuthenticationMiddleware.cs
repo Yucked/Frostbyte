@@ -2,23 +2,23 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Rhapsody.Entities;
+using Rhapsody.Options;
 
-namespace Rhapsody.Middlewares {
+namespace Rhapsody.Internals.Middlewares {
 	public readonly struct AuthenticationMiddleware {
 		private readonly RequestDelegate _requestDelegate;
 		private readonly ILogger _logger;
-		private readonly Configuration _configuration;
+		private readonly AuthenticationOptions _authenticationOptions;
 
 		public AuthenticationMiddleware(RequestDelegate requestDelegate, IConfiguration configuration,
 			ILogger<AuthenticationMiddleware> logger) {
 			_requestDelegate = requestDelegate;
-			_configuration = configuration.Get<Configuration>();
+			_authenticationOptions = configuration.Get<OptionsManager>().Authentication;
 			_logger = logger;
 		}
 
 		public async Task Invoke(HttpContext context) {
-			if (!_configuration.AuthEndpoints.Contains(context.Request.Path)) {
+			if (!_authenticationOptions.Endpoints.Contains(context.Request.Path)) {
 				await _requestDelegate(context);
 				return;
 			}
@@ -33,7 +33,7 @@ namespace Rhapsody.Middlewares {
 				return;
 			}
 
-			if (authorization != _configuration.Authorization) {
+			if (authorization != _authenticationOptions.Password) {
 				_logger.LogError($"{remoteEndpoint} provided wrong authorization value.");
 				context.Response.StatusCode = 401;
 				await context.Response.CompleteAsync();

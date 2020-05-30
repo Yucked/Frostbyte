@@ -4,10 +4,10 @@ using System.Drawing;
 using System.Threading.Tasks;
 using Colorful;
 using Microsoft.Extensions.Logging;
-using Rhapsody.Entities;
 using Rhapsody.Extensions;
+using Rhapsody.Options;
 
-namespace Rhapsody.Logging {
+namespace Rhapsody.Internals.Logging {
 	public struct LoggerProvider : ILoggerProvider {
 		private const string MESSAGE_FORMAT = "[{0}] [{1}] [{2}]\n{3}";
 		private readonly LogLevel _defaultLevel;
@@ -16,9 +16,9 @@ namespace Rhapsody.Logging {
 		private readonly ConcurrentDictionary<string, ILogger> _loggers;
 		private bool _isDisposed;
 
-		public LoggerProvider(Configuration configuration) {
-			_defaultLevel = configuration.LogLevel;
-			_filters = configuration.LogFilters;
+		public LoggerProvider(LoggingOptions loggingOptions) {
+			_defaultLevel = loggingOptions.DefaultLevel;
+			_filters = loggingOptions.Filters;
 			_loggers = new ConcurrentDictionary<string, ILogger>();
 			_queue = new ConcurrentQueue<Formatter[]>();
 			_isDisposed = false;

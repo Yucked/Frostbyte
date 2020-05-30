@@ -4,7 +4,7 @@ using Colorful;
 using Microsoft.Extensions.Logging;
 using Rhapsody.Extensions;
 
-namespace Rhapsody.Logging {
+namespace Rhapsody.Internals.Logging {
 	public readonly struct ColorfulLogger : ILogger {
 		private readonly string _categoryName;
 		private readonly LogLevel _categoryLevel;
