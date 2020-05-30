@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Colorful;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Console = Colorful.Console;
 
@@ -60,6 +61,10 @@ namespace Rhapsody.Extensions {
 
 			httpContext.Response.StatusCode = 403;
 			return false;
+		}
+
+		public static bool TryMatchAny<T>(this T value, params T[] against) where T : struct {
+			return against.Contains(value);
 		}
 	}
 }
