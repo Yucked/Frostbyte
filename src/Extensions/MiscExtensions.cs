@@ -1,12 +1,18 @@
+using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Colorful;
-using System.Linq;
+using Dysc.Providers;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Rhapsody.Objects;
 using Console = Colorful.Console;
 
 namespace Rhapsody.Extensions {
@@ -65,6 +71,44 @@ namespace Rhapsody.Extensions {
 
 		public static bool TryMatchAny<T>(this T value, params T[] against) where T : struct {
 			return against.Contains(value);
+		}
+
+		public static ApplicationOptions VerifyOptions() {
+			ApplicationOptions applicationOptions;
+			if (File.Exists(ApplicationOptions.FILE_NAME)) {
+				var bytes = File.ReadAllBytes(ApplicationOptions.FILE_NAME);
+				applicationOptions = bytes.Deserialize<ApplicationOptions>();
+			}
+			else {
+				applicationOptions = new ApplicationOptions {
+					Endpoint = new EndpointOptions {
+						Host = "*",
+						Port = 2020,
+						FallbackRandom = false
+					},
+					Authentication = new AuthenticationOptions {
+						Password = nameof(Rhapsody),
+						Endpoints = new List<string> {
+							"/api/search",
+							"/ws"
+						}
+					},
+					Logging = new LoggingOptions {
+						Filters = new Dictionary<string, LogLevel> {
+							{
+								"System.*", LogLevel.Warning
+							}
+						},
+						DefaultLevel = LogLevel.Trace
+					},
+					Providers = Enum.GetNames(typeof(ProviderType))
+					   .ToDictionary(x => x, x => true)
+				};
+				var serialize = applicationOptions.Serialize();
+				File.WriteAllBytes(ApplicationOptions.FILE_NAME, serialize);
+			}
+
+			return applicationOptions;
 		}
 	}
 }

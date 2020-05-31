@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Colorful;
 using Microsoft.Extensions.Logging;
 using Rhapsody.Extensions;
-using Rhapsody.Options;
+using Rhapsody.Objects;
 
 namespace Rhapsody.Internals.Logging {
 	public struct LoggerProvider : ILoggerProvider {

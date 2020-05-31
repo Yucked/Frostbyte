@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Rhapsody.Options;
+using Rhapsody.Objects;
 
 namespace Rhapsody.Internals.Middlewares {
 	public readonly struct AuthenticationMiddleware {
@@ -13,7 +13,7 @@ namespace Rhapsody.Internals.Middlewares {
 		public AuthenticationMiddleware(RequestDelegate requestDelegate, IConfiguration configuration,
 			ILogger<AuthenticationMiddleware> logger) {
 			_requestDelegate = requestDelegate;
-			_authenticationOptions = configuration.Get<OptionsManager>().Authentication;
+			_authenticationOptions = configuration.Get<ApplicationOptions>().Authentication;
 			_logger = logger;
 		}
 

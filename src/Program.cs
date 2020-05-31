@@ -1,43 +1,45 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Dysc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rhapsody.Extensions;
 using Rhapsody.Internals.Attributes;
 using Rhapsody.Internals.Logging;
-using Rhapsody.Options;
+using Rhapsody.Objects;
 
 namespace Rhapsody {
 	public readonly struct Program {
 		public static async Task Main() {
 			try {
 				MiscExtensions.SetupApplicationInformation();
-
-				var configuration = OptionsManager.IsCreated
-					? OptionsManager.Load()
-					: OptionsManager.Create();
+				var applicationOptions = MiscExtensions.VerifyOptions();
 
 				await Host.CreateDefaultBuilder()
-				   .ConfigureAppConfiguration(x => {
-						x.SetBasePath(Directory.GetCurrentDirectory());
-						x.AddJsonFile(OptionsManager.FILE_NAME, false, true);
+				   .ConfigureAppConfiguration(builder => {
+						var sources = builder.Sources.OfType<JsonConfigurationSource>().ToArray();
+						foreach (var source in sources) {
+							builder.Sources.Remove(source);
+						}
+
+						builder.SetBasePath(Directory.GetCurrentDirectory());
+						builder.AddJsonFile(ApplicationOptions.FILE_NAME, false, true);
 					})
 				   .ConfigureWebHostDefaults(webBuilder => {
-						var endpoint = configuration.Endpoint;
-						webBuilder.UseUrls($"http://{endpoint.Host}:{endpoint.Port}");
+						webBuilder.UseUrls($"http://{applicationOptions.Url}");
 						webBuilder.UseStartup<Startup>();
 					})
 				   .ConfigureLogging(logging => {
-						var loggingOptions = configuration.Logging;
-						logging.SetMinimumLevel(loggingOptions.DefaultLevel);
+						logging.SetMinimumLevel(applicationOptions.Logging.DefaultLevel);
 						logging.ClearProviders();
-						logging.AddProvider(new LoggerProvider(loggingOptions));
+						logging.AddProvider(new LoggerProvider(applicationOptions.Logging));
 					})
 				   .ConfigureServices((context, collection) => {
 						collection.AddConnections();
@@ -49,8 +51,8 @@ namespace Rhapsody {
 						});
 						collection.AddResponseCaching(cachingOptions => { cachingOptions.SizeLimit = 5; });
 						collection.AddResponseCompression();
-						collection.Configure<OptionsManager>(context.Configuration);
-						
+						collection.Configure<ApplicationOptions>(context.Configuration);
+
 						collection.AddScoped<ProviderFilterAttribute>();
 						collection.AddSingleton<DyscClient>();
 					})

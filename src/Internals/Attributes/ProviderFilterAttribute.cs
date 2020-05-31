@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
-using Rhapsody.Options;
+using Rhapsody.Objects;
 using Rhapsody.Payloads.Outbound;
 
 namespace Rhapsody.Internals.Attributes {
@@ -9,7 +9,7 @@ namespace Rhapsody.Internals.Attributes {
 		private readonly IDictionary<string, bool> _providers;
 
 		public ProviderFilterAttribute(IConfiguration configuration) {
-			_providers = configuration.Get<OptionsManager>().Providers;
+			_providers = configuration.Get<ApplicationOptions>().Providers;
 		}
 
 		public override void OnActionExecuting(ActionExecutingContext context) {
