@@ -1,10 +1,15 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Dysc;
 using Dysc.Providers;
+using Dysc.Search;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Rhapsody.Extensions;
 using Rhapsody.Internals.Attributes;
 using Rhapsody.Payloads.Outbound;
 
@@ -13,11 +18,13 @@ namespace Rhapsody.Controllers {
 	[ServiceFilter(typeof(ProviderFilterAttribute))]
 	public sealed class SearchController : ControllerBase {
 		private readonly DyscClient _dyscClient;
+		private readonly IMemoryCache _memoryCache;
 		private readonly ILogger _logger;
 
-		public SearchController(DyscClient dyscClient, ILogger<SearchController> logger) {
+		public SearchController(DyscClient dyscClient, ILogger<SearchController> logger, IMemoryCache memoryCache) {
 			_dyscClient = dyscClient;
 			_logger = logger;
+			_memoryCache = memoryCache;
 		}
 
 
@@ -70,13 +77,56 @@ namespace Rhapsody.Controllers {
 
 			try {
 				var provider = _dyscClient.GetProvider(providerType);
-				var searchResponse = await provider.SearchAsync(query);
+				if (TrySearchCache(providerType, query, out var searchResponse)) {
+				}
+				else {
+					searchResponse = await provider.SearchAsync(query);
+					_memoryCache.Set(providerType, new[] {
+						searchResponse
+					});
+				}
+
 				return RestResponse.Ok(searchResponse);
 			}
 			catch (Exception exception) {
 				_logger.LogCritical(exception, exception.StackTrace);
 				return RestResponse.Error(exception.Message);
 			}
+		}
+
+		private bool TrySearchCache(ProviderType providerType, string query, out SearchResponse searchResponse) {
+			searchResponse = default;
+			if (!_memoryCache.TryGetValue(providerType, out ICollection<SearchResponse> searchResponses)) {
+				return false;
+			}
+
+			foreach (var response in searchResponses) {
+				if (response.Query.IsFuzzyMatch(query)) {
+					searchResponse = response;
+					return true;
+				}
+
+				var sum = response.Tracks.Sum(info => {
+					if (info.Url.IsFuzzyMatch(query)) {
+						return 1;
+					}
+
+					if (info.Title.IsFuzzyMatch(query)) {
+						return 1;
+					}
+
+					return $"{info.Author} {info.Title}".IsFuzzyMatch(query) ? 1 : 0;
+				});
+
+				if (sum / response.Tracks.Count <= 85) {
+					continue;
+				}
+
+				searchResponse = response;
+				return true;
+			}
+			
+			return false;
 		}
 	}
 }
