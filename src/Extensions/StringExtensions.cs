@@ -87,5 +87,35 @@ namespace Rhapsody.Extensions {
 			category = tempCategory;
 			return true;
 		}
+
+		public static bool IsFuzzyMatch(this string str, string against, int percentage = 95) {
+			var n = str.Length;
+			var m = against.Length;
+			var d = new int[n + 1, m + 1];
+
+			if (n == 0) {
+				return false;
+			}
+
+			if (m == 0) {
+				return false;
+			}
+
+			for (var i = 0; i <= n; d[i, 0] = i++) {
+			}
+
+			for (var j = 0; j <= m; d[0, j] = j++) {
+			}
+
+			for (var i = 1; i <= n; i++) {
+				for (var j = 1; j <= m; j++) {
+					var cost = against[j - 1] == str[i - 1] ? 0 : 1;
+					d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + cost);
+				}
+			}
+
+			var result = 100 - d[n, m];
+			return result >= percentage;
+		}
 	}
 }
