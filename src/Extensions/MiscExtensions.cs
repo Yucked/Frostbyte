@@ -102,7 +102,7 @@ namespace Rhapsody.Extensions {
 						DefaultLevel = LogLevel.Trace
 					},
 					Providers = Enum.GetNames(typeof(ProviderType))
-					   .ToDictionary(x => x, x => true)
+					   .ToDictionary(x => x.ToLower(), x => true)
 				};
 				var serialize = applicationOptions.Serialize();
 				File.WriteAllBytes(ApplicationOptions.FILE_NAME, serialize);
